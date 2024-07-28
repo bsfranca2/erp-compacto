@@ -32,6 +32,7 @@ const formId = useId()
 const isOpen = ref(false)
 const isEdit = ref(false)
 const supplierId = ref<number | null>(null)
+const isLoading = ref(false)
 
 const schema = z.object({
   name: z.string()
@@ -40,22 +41,27 @@ const schema = z.object({
   contactInfo: z.string().optional().nullable(), // Usando camelCase para a variável
 })
 
+const initialValues = {
+  name: '',
+  contactInfo: '',
+}
+
 const { handleSubmit, resetForm } = useForm({
   validationSchema: toTypedSchema(schema),
-  initialValues: {
-    name: '',
-    contactInfo: '',
-  },
+  initialValues,
 })
 
 function openAddDialog() {
   isEdit.value = false
-  resetForm()
+  resetForm({ values: initialValues })
   isOpen.value = true
 }
 
 function openEditDialog(id: number) {
-  fetchSupplier(id)
+  isLoading.value = true
+  fetchSupplier(id).finally(() => {
+    isLoading.value = false
+  })
   isOpen.value = true
 }
 
@@ -128,7 +134,8 @@ defineExpose({ openAddDialog, openEditDialog })
         </DialogDescription>
       </DialogHeader>
 
-      <form :id="formId" class="space-y-4" @submit="onSubmit">
+      <span v-if="isLoading">Carregando...</span>
+      <form v-else :id="formId" class="space-y-4" @submit="onSubmit">
         <FormField v-slot="{ componentField }" name="name">
           <FormItem>
             <FormLabel>Nome do Fornecedor</FormLabel>
