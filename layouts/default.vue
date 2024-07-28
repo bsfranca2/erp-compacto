@@ -15,9 +15,9 @@ const menu = [
     href: '/purchases',
   },
   {
-    label: 'Estoque',
+    label: 'Produtos',
     icon: 'i-fluent-box-24-regular',
-    href: '/inventory',
+    href: '/products',
   },
   {
     label: 'Vendas',
