@@ -24,21 +24,21 @@ const menu = [
     icon: 'i-fluent-arrow-trending-lines-24-regular',
     href: '/sales',
   },
-  {
-    label: 'Financeiro',
-    icon: 'i-fluent-receipt-money-24-regular',
-    href: '/financial',
-  },
-  {
-    label: 'Relatórios',
-    icon: 'i-fluent-chart-multiple-24-regular',
-    href: '/reports',
-  },
-  {
-    label: 'Configurações',
-    icon: 'i-fluent-settings-24-regular',
-    href: '/settings',
-  },
+  // {
+  //   label: 'Financeiro',
+  //   icon: 'i-fluent-receipt-money-24-regular',
+  //   href: '/financial',
+  // },
+  // {
+  //   label: 'Relatórios',
+  //   icon: 'i-fluent-chart-multiple-24-regular',
+  //   href: '/reports',
+  // },
+  // {
+  //   label: 'Configurações',
+  //   icon: 'i-fluent-settings-24-regular',
+  //   href: '/settings',
+  // },
 ]
 
 async function logout() {
