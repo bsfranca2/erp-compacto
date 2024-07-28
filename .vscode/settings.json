@@ -62,7 +62,8 @@
     "pinia",
     "popperjs",
     "tailwindcss",
-    "vueuse"
+    "vueuse",
+    "supabase"
   ],
 
   "cSpell.language": "en,pt_BR"
