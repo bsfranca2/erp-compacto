@@ -88,10 +88,7 @@ async function logout() {
 
 <style>
 body {
-  @apply text-primary-25;
-}
-body {
-  @apply text-md;
+  @apply text-md text-gray-900;
 }
 html, body, #__nuxt {
   @apply bg-gray-25;
