@@ -31,6 +31,7 @@ const formId = useId()
 const isOpen = ref(false)
 const isEdit = ref(false)
 const productId = ref<number | null>(null)
+const isLoading = ref(false)
 
 const schema = z.object({
   name: z.string().min(2, { message: 'O nome deve ter pelo menos 2 caracteres' }).max(255, { message: 'O nome pode ter no máximo 255 caracteres' }),
@@ -40,26 +41,31 @@ const schema = z.object({
   sale_price: z.number().min(0, { message: 'O preço de venda deve ser um número positivo' }),
 })
 
+const initialValues = {
+  name: '',
+  description: '',
+  unit: '',
+  purchase_price: 0,
+  sale_price: 0,
+}
+
 const { handleSubmit, resetForm } = useForm({
   validationSchema: toTypedSchema(schema),
-  initialValues: {
-    name: '',
-    description: '',
-    unit: '',
-    purchase_price: 0,
-    sale_price: 0,
-  },
+  initialValues,
 })
 
 function openAddDialog() {
   isEdit.value = false
-  resetForm()
+  resetForm({ values: initialValues })
   isOpen.value = true
 }
 
 function openEditDialog(id: number) {
-  fetchProduct(id)
+  isLoading.value = true
   isOpen.value = true
+  fetchProduct(id).finally(() => {
+    isLoading.value = false
+  })
 }
 
 async function fetchProduct(id: number) {
@@ -151,7 +157,8 @@ defineExpose({ openAddDialog, openEditDialog })
         </DialogDescription>
       </DialogHeader>
 
-      <form :id="formId" @submit="onSubmit">
+      <span v-if="isLoading">Carregando...</span>
+      <form v-else :id="formId" @submit="onSubmit">
         <FormField v-slot="{ componentField }" name="name">
           <FormItem>
             <FormLabel>Nome do Produto</FormLabel>

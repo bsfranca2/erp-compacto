@@ -1,19 +1,13 @@
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import type { ProductFormModal } from '@/types/component-ref'
+import type { MovementSheet, ProductFormModal } from '@/types/component-ref'
 import { toast } from '@/components/ui/toast'
 
 const productFormModal = ref<ProductFormModal | null>(null)
-const products = ref<Array<{ product_id: number, name: string, description: string | null, unit: string, purchase_price: number, sale_price: number }>>([])
+const movementSheet = ref<MovementSheet | null>(null)
+const products = ref<Array<{ product_id: number, name: string, description: string | null, unit: string, purchase_price: number, sale_price: number, quantity: number }>>([])
 
 const supabase = useSupabaseClient()
 
@@ -25,10 +19,14 @@ function openEditDialog(id: number) {
   productFormModal.value?.openEditDialog(id)
 }
 
+function openMovementSheet(id: number) {
+  movementSheet.value?.openSheet(id)
+}
+
 async function fetchProducts() {
   const { data, error } = await supabase
     .from('products')
-    .select('product_id, name, description, unit, purchase_price, sale_price')
+    .select('product_id, name, description, unit, purchase_price, sale_price, inventory(quantity)')
 
   if (error) {
     toast({
@@ -44,8 +42,13 @@ async function fetchProducts() {
       unit: product.unit,
       purchase_price: product.purchase_price,
       sale_price: product.sale_price,
+      quantity: product.inventory[0].quantity,
     }))
   }
+}
+
+function formatCurrency(value: number): string {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
 }
 
 onMounted(fetchProducts)
@@ -53,17 +56,17 @@ onMounted(fetchProducts)
 
 <template>
   <div class="page-content">
-    <div class="flex justify-between mb-6">
+    <div class="flex justify-between mb-8">
       <div>
-        <h3 class="text-lg font-semibold text-gray-900 mb-1">
+        <h2 class="text-2xl font-semibold mb-1">
           Produtos
-        </h3>
-        <p class="text-sm text-gray-600">
+        </h2>
+        <p class="text-md text-gray-600">
           Gerenciamento de informações de produtos e controle de estoque
         </p>
       </div>
       <div>
-        <Button variant="outline" @click="openAddDialog">
+        <Button @click="openAddDialog">
           <i class="i-fluent-add-24-regular h-5 w-5 mr-1.5" />Adicionar Produto
         </Button>
       </div>
@@ -80,6 +83,7 @@ onMounted(fetchProducts)
           <TableHead>Unidade</TableHead>
           <TableHead>Preço de Compra</TableHead>
           <TableHead>Preço de Venda</TableHead>
+          <TableHead>Estoque</TableHead>
           <TableHead class="text-right">
             Ações
           </TableHead>
@@ -91,9 +95,13 @@ onMounted(fetchProducts)
           <TableCell>{{ product.name }}</TableCell>
           <TableCell>{{ product.description || 'N/A' }}</TableCell>
           <TableCell>{{ product.unit || 'N/A' }}</TableCell>
-          <TableCell>{{ product.purchase_price | currency }}</TableCell>
-          <TableCell>{{ product.sale_price | currency }}</TableCell>
+          <TableCell>{{ formatCurrency(product.purchase_price) }}</TableCell>
+          <TableCell>{{ formatCurrency(product.sale_price) }}</TableCell>
+          <TableCell>{{ product.quantity }}</TableCell>
           <TableCell class="text-right">
+            <Button variant="outline" size="sm" @click="openMovementSheet(product.product_id)">
+              Ver Movimentações
+            </Button>
             <Button variant="outline" size="sm" @click="openEditDialog(product.product_id)">
               Editar
             </Button>
@@ -103,4 +111,5 @@ onMounted(fetchProducts)
     </Table>
   </div>
   <ProductFormModal ref="productFormModal" @refresh="fetchProducts" />
+  <MovementSheet ref="movementSheet" />
 </template>
