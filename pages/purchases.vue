@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+const route = useRoute()
+
 const items = [
   {
     label: 'Compras',
@@ -10,7 +12,9 @@ const items = [
   },
 ]
 
-await navigateTo('/purchases/list')
+if (route.path === '/purchases') {
+  await navigateTo('/purchases/list')
+}
 </script>
 
 <template>
