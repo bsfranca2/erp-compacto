@@ -2,6 +2,7 @@ import type { Config } from 'tailwindcss'
 import plugin from 'tailwindcss/plugin'
 import defaultTheme from 'tailwindcss/defaultTheme'
 import animate from 'tailwindcss-animate'
+import { getIconCollections, iconsPlugin } from '@egoist/tailwindcss-icons'
 
 export default <Partial<Config>> {
   darkMode: 'class',
@@ -28,21 +29,7 @@ export default <Partial<Config>> {
     },
     extend: {
       colors: {
-        'brand-gray': {
-          25: '#fcfcfd',
-          50: '#f9fafb',
-          100: '#f2f4f7',
-          200: '#eaecf0',
-          300: '#d0d5dd',
-          400: '#98a2b3',
-          500: '#667085',
-          600: '#475467',
-          700: '#344054',
-          800: '#182230',
-          900: '#101828',
-          950: '#0c111d',
-        },
-        'brand-primary': {
+        primary: {
           25: '#f5f8ff',
           50: '#eff4ff',
           100: '#d1e0ff',
@@ -56,6 +43,20 @@ export default <Partial<Config>> {
           900: '#00359e',
           950: '#002266',
         },
+        gray: {
+          25: '#fcfcfd',
+          50: '#f9fafb',
+          100: '#f2f4f7',
+          200: '#eaecf0',
+          300: '#d0d5dd',
+          400: '#98a2b3',
+          500: '#667085',
+          600: '#475467',
+          700: '#344054',
+          800: '#182230',
+          900: '#101828',
+          950: '#0c111d',
+        }
         // error: {
         //   DEFAULT: 'hsl(var(--error-500))',
         //   25: 'hsl(var(--error-25))',
@@ -153,6 +154,9 @@ export default <Partial<Config>> {
   },
   plugins: [
     animate,
+    iconsPlugin({
+      collections: getIconCollections(['fluent']),
+    }),
     plugin(({ addUtilities }) => {
       addUtilities({
         '.ring-primary-shadow-xs': {
