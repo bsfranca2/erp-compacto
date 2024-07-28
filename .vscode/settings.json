@@ -63,7 +63,8 @@
     "popperjs",
     "tailwindcss",
     "vueuse",
-    "supabase"
+    "supabase",
+    "clsx"
   ],
 
   "cSpell.language": "en,pt_BR"
