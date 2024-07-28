@@ -1,0 +1,37 @@
+{
+  "name": "erp-compacto",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ERPCompacto é um sistema simples de gestão empresarial para pequenas lojas, com funcionalidades de controle de compras, estoque, vendas e pagamentos.",
+  "author": "Bruno França",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bsfranca2/erp-compacto.git"
+  },
+  "keywords": [
+    "ERP",
+    "Nuxt",
+    "Supabase",
+    "Gestão de Estoque",
+    "Vendas"
+  ],
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix ."
+  },
+  "dependencies": {
+    "nuxt": "^3.12.4",
+    "vue": "latest"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^2.24.0",
+    "eslint": "^8.57.0"
+  }
+}
