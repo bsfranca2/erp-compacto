@@ -59,7 +59,7 @@ onMounted(fetchSuppliers)
         </p>
       </div>
       <div>
-        <Button variant="outline" @click="openAddDialog">
+        <Button @click="openAddDialog">
           <i class="i-fluent-add-24-regular h-5 w-5 mr-1.5" />Adicionar Fornecedor
         </Button>
       </div>
