@@ -20,6 +20,10 @@ function openAddDialog() {
 function openEditDialog(id: number) {
   supplierFormModal.value?.openEditDialog(id)
 }
+
+onMounted(() => {
+  supplierStore.fetchSuppliers()
+})
 </script>
 
 <template>
@@ -64,7 +68,6 @@ function openEditDialog(id: number) {
             <Button variant="outline" size="sm" @click="openEditDialog(supplier.id)">
               Editar
             </Button>
-            <!-- TODO: Adicione um botão para exclusão aqui, se necessário -->
           </TableCell>
         </TableRow>
       </TableBody>

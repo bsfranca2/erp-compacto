@@ -27,18 +27,19 @@ const emit = defineEmits<{
   (e: 'refresh'): void
 }>()
 
-const supabase = useSupabaseClient()
+const supplierService = useSupplierService()
 const formId = useId()
 const isOpen = ref(false)
 const isEdit = ref(false)
 const supplierId = ref<number | null>(null)
-const isLoading = ref(false)
+const isFetching = ref(false)
+const isSubmitting = ref(false)
 
 const schema = z.object({
   name: z.string()
     .min(2, { message: 'O nome deve ter pelo menos 2 caracteres' })
     .max(50, { message: 'O nome pode ter no máximo 50 caracteres' }),
-  contactInfo: z.string().optional().nullable(), // Usando camelCase para a variável
+  contactInfo: z.string().nullable(),
 })
 
 const initialValues = {
@@ -58,65 +59,46 @@ function openAddDialog() {
 }
 
 function openEditDialog(id: number) {
-  isLoading.value = true
+  isFetching.value = true
   fetchSupplier(id).finally(() => {
-    isLoading.value = false
+    isFetching.value = false
   })
   isOpen.value = true
 }
 
 async function fetchSupplier(id: number) {
-  const { data, error } = await supabase
-    .from('suppliers')
-    .select('name, contact_info') // Usando a notação do banco de dados
-    .eq('supplier_id', id)
-    .single()
-
-  if (error) {
-    toast({
-      title: 'Erro ao carregar fornecedor',
-      description: `Ocorreu um erro: ${error.message}`,
-    })
+  const data = await supplierService.fetchSupplierById(id)
+  if (!data) {
     return
   }
 
   supplierId.value = id
-  resetForm({ values: { name: data.name, contactInfo: data.contact_info || '' } }) // Converte para camelCase
+  resetForm({ values: data })
   isEdit.value = true
 }
 
 const onSubmit = handleSubmit(async (values) => {
-  try {
-    let error
-    if (isEdit.value && supplierId.value !== null) {
-      ({ error } = await supabase
-        .from('suppliers')
-        .update({ name: values.name, contact_info: values.contactInfo }) // Enviando como contact_info para o banco
-        .eq('supplier_id', supplierId.value))
-    }
-    else {
-      ({ error } = await supabase
-        .from('suppliers')
-        .insert([{ name: values.name, contact_info: values.contactInfo }])) // Enviando como contact_info para o banco
-    }
-
-    if (error) {
-      throw error
-    }
-
-    toast({
-      title: isEdit.value ? 'Fornecedor atualizado com sucesso!' : 'Fornecedor adicionado com sucesso!',
-      description: `Fornecedor ${values.name} foi ${isEdit.value ? 'atualizado' : 'cadastrado'} com sucesso.`,
-    })
-    isOpen.value = false
-    emit('refresh')
+  isSubmitting.value = true
+  let ok = true
+  if (isEdit.value && supplierId.value !== null) {
+    ok = await supplierService.updateSupplier({ id: supplierId.value, ...values })
   }
-  catch (error) {
-    toast({
-      title: isEdit.value ? 'Erro ao atualizar fornecedor' : 'Erro ao adicionar fornecedor',
-      description: `Ocorreu um erro: ${(error as Error).message}`,
-    })
+  else {
+    const supplierCreated = await supplierService.createSupplier(values)
+    ok = !!supplierCreated
   }
+
+  isSubmitting.value = false
+  if (!ok) {
+    return
+  }
+
+  toast({
+    title: isEdit.value ? 'Fornecedor atualizado com sucesso!' : 'Fornecedor adicionado com sucesso!',
+    description: `Fornecedor ${values.name} foi ${isEdit.value ? 'atualizado' : 'cadastrado'} com sucesso.`,
+  })
+  isOpen.value = false
+  emit('refresh')
 })
 
 defineExpose({ openAddDialog, openEditDialog })
@@ -134,7 +116,7 @@ defineExpose({ openAddDialog, openEditDialog })
         </DialogDescription>
       </DialogHeader>
 
-      <span v-if="isLoading">Carregando...</span>
+      <span v-if="isFetching">Carregando...</span>
       <form v-else :id="formId" class="space-y-4" @submit="onSubmit">
         <FormField v-slot="{ componentField }" name="name">
           <FormItem>
@@ -158,10 +140,11 @@ defineExpose({ openAddDialog, openEditDialog })
       </form>
 
       <DialogFooter>
-        <Button variant="outline" class="w-full" @click="isOpen = false">
+        <Button variant="outline" class="w-full" :disabled="isSubmitting" @click="isOpen = false">
           Cancelar
         </Button>
-        <Button type="submit" class="w-full" :form="formId">
+        <Button type="submit" class="w-full" :form="formId" :disabled="isSubmitting">
+          <i v-show="isSubmitting" class="i-fluent-spinner-ios-20-regular w-4 h-4 mr-2 animate-spin" />
           Salvar
         </Button>
       </DialogFooter>

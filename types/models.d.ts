@@ -3,3 +3,5 @@ export interface Supplier {
   name: string
   contactInfo: string | null
 }
+export type NewSupplierData = Omit<Supplier, 'id'>
+export type UpdateSupplierData = Supplier
