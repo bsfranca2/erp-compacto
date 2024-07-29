@@ -26,27 +26,28 @@ const emit = defineEmits<{
   (e: 'refresh'): void
 }>()
 
-const supabase = useSupabaseClient()
+const productService = useProductService()
 const formId = useId()
 const isOpen = ref(false)
 const isEdit = ref(false)
 const productId = ref<number | null>(null)
-const isLoading = ref(false)
+const isFetching = ref(false)
+const isSubmitting = ref(false)
 
 const schema = z.object({
   name: z.string().min(2, { message: 'O nome deve ter pelo menos 2 caracteres' }).max(255, { message: 'O nome pode ter no máximo 255 caracteres' }),
-  description: z.string().optional().nullable(),
-  unit: z.string().max(50, { message: 'A unidade pode ter no máximo 50 caracteres' }).optional().nullable(),
-  purchase_price: z.number().min(0, { message: 'O preço de compra deve ser um número positivo' }),
-  sale_price: z.number().min(0, { message: 'O preço de venda deve ser um número positivo' }),
+  description: z.string().nullable(),
+  unit: z.string().max(50, { message: 'A unidade pode ter no máximo 50 caracteres' }).nullable(),
+  purchasePrice: z.number().min(0, { message: 'O preço de compra deve ser um número positivo' }),
+  salePrice: z.number().min(0, { message: 'O preço de venda deve ser um número positivo' }),
 })
 
 const initialValues = {
   name: '',
   description: '',
   unit: '',
-  purchase_price: 0,
-  sale_price: 0,
+  purchasePrice: 0,
+  salePrice: 0,
 }
 
 const { handleSubmit, resetForm } = useForm({
@@ -61,85 +62,46 @@ function openAddDialog() {
 }
 
 function openEditDialog(id: number) {
-  isLoading.value = true
+  isFetching.value = true
   isOpen.value = true
   fetchProduct(id).finally(() => {
-    isLoading.value = false
+    isFetching.value = false
   })
 }
 
 async function fetchProduct(id: number) {
-  const { data, error } = await supabase
-    .from('products')
-    .select('name, description, unit, purchase_price, sale_price')
-    .eq('product_id', id)
-    .single()
-
-  if (error) {
-    toast({
-      title: 'Erro ao carregar produto',
-      description: `Ocorreu um erro: ${error.message}`,
-    })
+  const data = await productService.fetchProductById(id)
+  if (!data) {
     return
   }
 
   productId.value = id
-  resetForm({
-    values: {
-      name: data.name,
-      description: data.description,
-      unit: data.unit,
-      purchase_price: data.purchase_price,
-      sale_price: data.sale_price,
-    },
-  })
+  resetForm({ values: data })
   isEdit.value = true
 }
 
 const onSubmit = handleSubmit(async (values) => {
-  try {
-    let error
-    if (isEdit.value && productId.value !== null) {
-      ({ error } = await supabase
-        .from('products')
-        .update({
-          name: values.name,
-          description: values.description,
-          unit: values.unit,
-          purchase_price: values.purchase_price,
-          sale_price: values.sale_price,
-        })
-        .eq('product_id', productId.value))
-    }
-    else {
-      ({ error } = await supabase
-        .from('products')
-        .insert([{
-          name: values.name,
-          description: values.description,
-          unit: values.unit,
-          purchase_price: values.purchase_price,
-          sale_price: values.sale_price,
-        }]))
-    }
-
-    if (error) {
-      throw error
-    }
-
-    toast({
-      title: isEdit.value ? 'Produto atualizado com sucesso!' : 'Produto adicionado com sucesso!',
-      description: `Produto ${values.name} foi ${isEdit.value ? 'atualizado' : 'cadastrado'} com sucesso.`,
-    })
-    isOpen.value = false
-    emit('refresh')
+  isSubmitting.value = true
+  let ok = true
+  if (isEdit.value && productId.value !== null) {
+    ok = await productService.updateProduct({ id: productId.value, ...values })
   }
-  catch (error) {
-    toast({
-      title: isEdit.value ? 'Erro ao atualizar produto' : 'Erro ao adicionar produto',
-      description: `Ocorreu um erro: ${(error as Error).message}`,
-    })
+  else {
+    const productCreated = await productService.createProduct(values)
+    ok = !!productCreated
   }
+
+  isSubmitting.value = false
+  if (!ok) {
+    return
+  }
+
+  toast({
+    title: isEdit.value ? 'Produto atualizado com sucesso!' : 'Produto adicionado com sucesso!',
+    description: `Produto ${values.name} foi ${isEdit.value ? 'atualizado' : 'cadastrado'} com sucesso.`,
+  })
+  isOpen.value = false
+  emit('refresh')
 })
 
 defineExpose({ openAddDialog, openEditDialog })
@@ -157,8 +119,8 @@ defineExpose({ openAddDialog, openEditDialog })
         </DialogDescription>
       </DialogHeader>
 
-      <span v-if="isLoading">Carregando...</span>
-      <form v-else :id="formId" @submit="onSubmit">
+      <span v-if="isFetching">Carregando...</span>
+      <form v-else :id="formId" class="space-y-4" @submit="onSubmit">
         <FormField v-slot="{ componentField }" name="name">
           <FormItem>
             <FormLabel>Nome do Produto</FormLabel>
@@ -189,22 +151,20 @@ defineExpose({ openAddDialog, openEditDialog })
           </FormItem>
         </FormField>
 
-        <FormField v-slot="{ componentField }" name="purchase_price">
+        <FormField v-slot="{ componentField }" name="purchasePrice">
           <FormItem>
             <FormLabel>Preço de Compra</FormLabel>
             <FormControl>
-              <!-- TODO: InputNumber -->
               <Input type="number" step="0.01" placeholder="Digite o preço de compra" v-bind="componentField" />
             </FormControl>
             <FormMessage />
           </FormItem>
         </FormField>
 
-        <FormField v-slot="{ componentField }" name="sale_price">
+        <FormField v-slot="{ componentField }" name="salePrice">
           <FormItem>
             <FormLabel>Preço de Venda</FormLabel>
             <FormControl>
-              <!-- TODO: InputNumber -->
               <Input type="number" step="0.01" placeholder="Digite o preço de venda" v-bind="componentField" />
             </FormControl>
             <FormMessage />
@@ -213,10 +173,11 @@ defineExpose({ openAddDialog, openEditDialog })
       </form>
 
       <DialogFooter>
-        <Button variant="outline" class="w-full" @click="isOpen = false">
+        <Button variant="outline" class="w-full" :disabled="isSubmitting" @click="isOpen = false">
           Cancelar
         </Button>
-        <Button type="submit" class="w-full" :form="formId">
+        <Button type="submit" class="w-full" :form="formId" :disabled="isSubmitting">
+          <i v-show="isSubmitting" class="i-fluent-spinner-ios-20-regular w-4 h-4 mr-2 animate-spin" />
           Salvar
         </Button>
       </DialogFooter>
