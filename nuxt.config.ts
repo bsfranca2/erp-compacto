@@ -7,6 +7,7 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     'shadcn-nuxt',
     '@nuxtjs/supabase',
+    '@pinia/nuxt',
   ],
   ssr: false,
   googleFonts: {
