@@ -11,3 +11,7 @@ export interface ProductFormModal {
 export interface MovementSheet {
   openSheet: (id: number) => void
 }
+
+export interface PurchaseSheet {
+  openSheet: (id: number | null) => void
+}
