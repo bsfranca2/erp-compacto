@@ -9,12 +9,9 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { toast } from '@/components/ui/toast'
 
+const supplierStore = useSupplierStore()
 const supplierFormModal = ref<SupplierFormModal | null>(null)
-const suppliers = ref<Array<{ id: number, name: string, contactInfo: string | null }>>([])
-
-const supabase = useSupabaseClient()
 
 function openAddDialog() {
   supplierFormModal.value?.openAddDialog()
@@ -23,28 +20,6 @@ function openAddDialog() {
 function openEditDialog(id: number) {
   supplierFormModal.value?.openEditDialog(id)
 }
-
-async function fetchSuppliers() {
-  const { data, error } = await supabase
-    .from('suppliers')
-    .select('supplier_id, name, contact_info')
-
-  if (error) {
-    toast({
-      title: 'Erro ao carregar fornecedores',
-      description: `Ocorreu um erro ao carregar a lista de fornecedores: ${error.message}`,
-    })
-  }
-  else {
-    suppliers.value = data.map(supplier => ({
-      id: supplier.supplier_id,
-      name: supplier.name,
-      contactInfo: supplier.contact_info,
-    }))
-  }
-}
-
-onMounted(fetchSuppliers)
 </script>
 
 <template>
@@ -79,7 +54,7 @@ onMounted(fetchSuppliers)
         </TableRow>
       </TableHeader>
       <TableBody>
-        <TableRow v-for="supplier in suppliers" :key="supplier.id">
+        <TableRow v-for="supplier in supplierStore.suppliers" :key="supplier.id">
           <TableCell class="font-medium">
             {{ supplier.id }}
           </TableCell>
@@ -95,5 +70,5 @@ onMounted(fetchSuppliers)
       </TableBody>
     </Table>
   </div>
-  <SupplierFormModal ref="supplierFormModal" @refresh="fetchSuppliers" />
+  <SupplierFormModal ref="supplierFormModal" @refresh="supplierStore.fetchSuppliers" />
 </template>
