@@ -160,6 +160,14 @@ async function fetchPurchase(id: number) {
   }
 }
 
+function updateUnitPrice(index: number, productId: number | string) {
+  const product = products.value.find(i => i.product_id.toString() === productId.toString())
+  if (!product) {
+    return
+  }
+  setFieldValue(`purchaseItems.${index}.unitPrice`, Number(product.purchase_price))
+}
+
 const onSubmit = handleSubmit(async (values) => {
   try {
     pending.value = true
@@ -334,7 +342,7 @@ defineExpose({ openSheet })
                     <FormItem>
                       <FormLabel>Produto</FormLabel>
 
-                      <Select v-bind="componentField">
+                      <Select v-bind="componentField" @update:model-value="updateUnitPrice(index, $event)">
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Selecione um produto" />
