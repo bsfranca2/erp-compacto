@@ -18,9 +18,8 @@
     "Vendas"
   ],
   "scripts": {
-    "build": "nuxt build",
     "dev": "nuxt dev",
-    "generate": "nuxt generate",
+    "build": "nuxt generate",
     "preview": "nuxt preview",
     "prepare": "nuxt prepare",
     "lint": "eslint .",
