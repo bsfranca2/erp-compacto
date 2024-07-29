@@ -194,7 +194,7 @@ defineExpose({ openAddDialog, openEditDialog })
             <FormLabel>Preço de Compra</FormLabel>
             <FormControl>
               <!-- TODO: InputNumber -->
-              <Input type="number" placeholder="Digite o preço de compra" v-bind="componentField" />
+              <Input type="number" step="0.01" placeholder="Digite o preço de compra" v-bind="componentField" />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -205,7 +205,7 @@ defineExpose({ openAddDialog, openEditDialog })
             <FormLabel>Preço de Venda</FormLabel>
             <FormControl>
               <!-- TODO: InputNumber -->
-              <Input type="number" placeholder="Digite o preço de venda" v-bind="componentField" />
+              <Input type="number" step="0.01" placeholder="Digite o preço de venda" v-bind="componentField" />
             </FormControl>
             <FormMessage />
           </FormItem>

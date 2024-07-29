@@ -154,7 +154,7 @@ defineExpose({ openSheet })
           <FormItem>
             <FormLabel>Quantidade</FormLabel>
             <FormControl>
-              <Input type="number" v-bind="componentField" />
+              <Input type="number" step="0.01" v-bind="componentField" />
             </FormControl>
             <FormMessage />
           </FormItem>

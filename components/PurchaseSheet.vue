@@ -60,8 +60,8 @@ const schema = z.object({
   supplierId: z.coerce.number().int().min(1, 'Selecione um fornecedor válido'),
   purchaseItems: z.array(z.object({
     productId: z.coerce.number().int().min(1, 'ID do produto inválido'),
-    quantity: z.coerce.number().int().min(1, 'A quantidade deve ser pelo menos 1'),
-    unitPrice: z.coerce.number().min(0, 'O preço unitário deve ser maior ou igual a 0'),
+    quantity: z.number().int().min(1, 'A quantidade deve ser pelo menos 1'),
+    unitPrice: z.number().min(0, 'O preço unitário deve ser maior ou igual a 0'),
   })).min(1, 'Adicione pelo menos um item à compra'),
   installments: z.number().int().min(1, 'O número de parcelas deve ser pelo menos 1'),
 })
@@ -364,7 +364,7 @@ defineExpose({ openSheet })
                     <FormItem>
                       <FormLabel>Preço</FormLabel>
                       <FormControl>
-                        <Input placeholder="Digite o valor unitário" v-bind="componentField" />
+                        <Input type="number" step="0.01" placeholder="Digite o valor unitário" v-bind="componentField" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
