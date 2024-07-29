@@ -12,11 +12,13 @@ useSeoMeta({
 })
 
 const supabase = useSupabaseClient()
+const router = useRouter()
 
 const loading = ref(false)
 
 const formSchema = toTypedSchema(z.object({
   email: z.string().email(),
+  password: z.string().min(0),
 }))
 
 const form = useForm({
@@ -26,10 +28,10 @@ const form = useForm({
 const onSubmit = form.handleSubmit(async (values) => {
   try {
     loading.value = true
-    const { error } = await supabase.auth.signInWithOtp({ email: values.email })
+    const { error } = await supabase.auth.signInWithPassword(values)
     if (error)
       throw error
-    alert('Check your email for the login link!')
+    router.push('/')
   }
   catch (error) {
     alert(error.error_description || error.message)
@@ -53,7 +55,7 @@ const onSubmit = form.handleSubmit(async (values) => {
     </div>
 
     <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-sm">
-      <form @submit="onSubmit">
+      <form class="space-y-4" @submit="onSubmit">
         <FormField v-slot="{ componentField }" name="email">
           <FormItem>
             <FormLabel>Email</FormLabel>
@@ -63,9 +65,20 @@ const onSubmit = form.handleSubmit(async (values) => {
             <FormMessage />
           </FormItem>
         </FormField>
-        <Button type="submit">
-          Submit
-        </Button>
+        <FormField v-slot="{ componentField }" name="password">
+          <FormItem>
+            <FormLabel>Senha</FormLabel>
+            <FormControl>
+              <Input type="password" v-bind="componentField" />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        </FormField>
+        <div class="flex justify-end w-full">
+          <Button type="submit">
+            Entrar
+          </Button>
+        </div>
       </form>
     </div>
   </div>
